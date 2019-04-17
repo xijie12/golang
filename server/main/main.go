@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net"
+	"time"
+	"gocode/chatroom/server/model"
 )
 
 func process(conn net.Conn){
@@ -20,7 +22,15 @@ func process(conn net.Conn){
 	}
 }
 
+func initUserDao() {
+	//这里的pool是redis.go里面定义的全局变量
+	model.MyUserDao = model.NewUserDao(pool)
+}
+
 func main(){
+	//初始化服务器redis连接池
+	initPool("127.0.0.1:6379",16,0,300 * time.Second)
+	initUserDao()
 	fmt.Println("服务器在8889端口监听...~~")
 
 	listen,err := net.Listen("tcp","0.0.0.0:8889")

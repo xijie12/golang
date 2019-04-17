@@ -1,13 +1,18 @@
-package main
+package process
 import (
 	"fmt"
 	"net"
 	"gocode/chatroom/common/message"
+	"gocode/chatroom/client/utils"
 	"encoding/json"
 	"encoding/binary"
 )
 
-func login(userId int,userPwd string) (err error){
+type UserProcess struct{
+
+}
+
+func (this *UserProcess) Login(userId int,userPwd string) (err error){
 
 
 	// fmt.Printf("userId = %d userPwd = %s\n",userId,userPwd)
@@ -64,7 +69,10 @@ func login(userId int,userPwd string) (err error){
 
 	// time.Sleep(20 * time.Second)
 	// fmt.Println("休眠了20s...")
-	mes,err = readPkg(conn)
+	tf := &utils.Transfer{
+		Conn: conn,
+	}
+	mes,err = tf.ReadPkg()
 
 	if err != nil {
 		fmt.Println("readPkg(conn) err=",err)
@@ -74,8 +82,15 @@ func login(userId int,userPwd string) (err error){
 	var loginResMes message.LoginResMes
 	err = json.Unmarshal([]byte(mes.Data),&loginResMes)
 	if loginResMes.Code == 200 {
-		fmt.Println("登录成功")
-	}else if loginResMes.Code == 500 {
+		// fmt.Println("登录成功")
+
+		go serverProcessMes(conn)
+		
+		//1.显示登录成功的菜单[循环]
+		for {
+			ShowMenu()
+		}
+	}else{
 		fmt.Println(loginResMes.Error)
 	}
 
